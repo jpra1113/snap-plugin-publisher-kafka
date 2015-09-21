@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/intelsdi-x/pulse/plugin/publisher/pulse-publisher-kafka",
+	"ImportPath": "github.com/intelsdi-x/pulse-plugin-publisher-kafka",
 	"GoVersion": "go1.4.2",
 	"Deps": [
 		{
@@ -19,6 +19,14 @@
 		{
 			"ImportPath": "github.com/intelsdi-x/gomit",
 			"Rev": "4f098da2bbb51d787be003e4abfbc25d01837564"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/pulse/control/plugin",
+			"Rev": "68527cf46aba395573014c5ad8260bb7139824c7"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/pulse/core/ctypes",
+			"Rev": "68527cf46aba395573014c5ad8260bb7139824c7"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
