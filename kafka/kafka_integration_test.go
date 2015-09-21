@@ -61,11 +61,6 @@ func TestPublish(t *testing.T) {
 			So(m, ShouldNotBeNil)
 			So(string(m.Value), ShouldEqual, t)
 		})
-
-		Convey("error on bad broker l", func() {
-
-		})
-
 	})
 }
 

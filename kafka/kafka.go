@@ -20,15 +20,14 @@ func Meta() *plugin.PluginMeta {
 	return plugin.NewPluginMeta(PluginName, PluginVersion, PluginType, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
 }
 
-type Kafka struct{}
+type kafkaPublisher struct{}
 
-func NewKafkaPublisher() *Kafka {
-	var k *Kafka
-	return k
+func NewKafkaPublisher() *kafkaPublisher {
+	return &kafkaPublisher{}
 }
 
 // Publish sends data to a Kafka server
-func (k *Kafka) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
+func (k *kafkaPublisher) Publish(contentType string, content []byte, config map[string]ctypes.ConfigValue) error {
 	topic := config["topic"].(ctypes.ConfigValueStr).Value
 	brokers := parseBrokerString(config["brokers"].(ctypes.ConfigValueStr).Value)
 	//
@@ -36,7 +35,7 @@ func (k *Kafka) Publish(contentType string, content []byte, config map[string]ct
 	return err
 }
 
-func (k *Kafka) GetConfigPolicy() cpolicy.ConfigPolicy {
+func (k *kafkaPublisher) GetConfigPolicy() cpolicy.ConfigPolicy {
 	cp := cpolicy.New()
 	config := cpolicy.NewPolicyNode()
 
@@ -54,7 +53,7 @@ func (k *Kafka) GetConfigPolicy() cpolicy.ConfigPolicy {
 }
 
 // Internal method after data has been converted to serialized bytes to send
-func (k *Kafka) publish(topic string, brokers []string, content []byte) error {
+func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte) error {
 	producer, err := sarama.NewSyncProducer(brokers, nil)
 	if err != nil {
 		return err
