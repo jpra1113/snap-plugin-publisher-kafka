@@ -1,4 +1,4 @@
-//
+// +build unit
 
 package kafka
 

@@ -82,5 +82,5 @@ if [[ $TEST_SUITE == "unit" ]]; then
 	#     done
 	# fi
 elif [[ $TEST_SUITE == "integration" ]]; then
-	go test -v --tags=integration ./...
+	PULSE_TEST_KAFKA="127.0.0.1" go test -v --tags=integration ./...
 fi
