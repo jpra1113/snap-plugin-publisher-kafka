@@ -21,12 +21,8 @@
 			"Rev": "4f098da2bbb51d787be003e4abfbc25d01837564"
 		},
 		{
-			"ImportPath": "github.com/intelsdi-x/pulse/control/plugin",
-			"Rev": "68527cf46aba395573014c5ad8260bb7139824c7"
-		},
-		{
-			"ImportPath": "github.com/intelsdi-x/pulse/core/ctypes",
-			"Rev": "68527cf46aba395573014c5ad8260bb7139824c7"
+			"ImportPath": "github.com/intelsdi-x/pulse",
+			"Rev": "544d1d673afb6b7e6f2f07331da79fb4de143d7e"
 		},
 		{
 			"ImportPath": "github.com/jtolds/gls",
