@@ -46,13 +46,16 @@ func TestKafkaPlugin(t *testing.T) {
 		Convey("so kafka publisher should be of kafka publisher type", func() {
 			So(k, ShouldHaveSameTypeAs, &kafkaPublisher{})
 		})
+		configPolicy, err := k.GetConfigPolicy()
 		Convey("k.GetConfigPolicy()", func() {
-			configPolicy := k.GetConfigPolicy()
 			Convey("So config policy should not be nil", func() {
 				So(configPolicy, ShouldNotBeNil)
 			})
+			Convey("So getting a config policy should not return an error", func() {
+				So(err, ShouldBeNil)
+			})
 			Convey("So config policy should be a cpolicy.ConfigPolicy type", func() {
-				So(configPolicy, ShouldHaveSameTypeAs, cpolicy.ConfigPolicy{})
+				So(configPolicy, ShouldHaveSameTypeAs, &cpolicy.ConfigPolicy{})
 			})
 			testConfig := make(map[string]ctypes.ConfigValue)
 			testConfig["brokers"] = ctypes.ConfigValueStr{Value: "127.0.0.1:9092"}

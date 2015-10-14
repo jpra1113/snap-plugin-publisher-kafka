@@ -28,8 +28,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
-	"github.com/intelsdi-x/pulse/core/cdata"
 	"github.com/intelsdi-x/pulse/core/ctypes"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -50,35 +48,33 @@ func TestPublish(t *testing.T) {
 	// Pick a random topic
 	topic := fmt.Sprintf("%d", time.Now().Nanosecond())
 	fmt.Printf("Topic: %s\n", topic)
-
+	config := make(map[string]ctypes.ConfigValue)
 	Convey("Publish to Kafka", t, func() {
 		Convey("publish and consume", func() {
 			k := NewKafkaPublisher()
 
 			// Build some config
-			cdn := cdata.NewNode()
-			cdn.AddItem("brokers", ctypes.ConfigValueStr{Value: brokers})
-			cdn.AddItem("topic", ctypes.ConfigValueStr{Value: topic})
+			config["brokers"] = ctypes.ConfigValueStr{Value: brokers}
+			config["topic"] = ctypes.ConfigValueStr{Value: topic}
 
 			// Get validated policy
-			cp := k.GetConfigPolicy()
-			p := cp.Get([]string{""})
-			f, err := p.Process(cdn.Table())
-			So(getProcessErrorStr(err), ShouldEqual, "")
+			cp, _ := k.GetConfigPolicy()
+			cfg, _ := cp.Get([]string{""}).Process(config)
 
 			t := time.Now().String()
 
 			// Send data to create topic. There is a weird bug where first message won't be consumed
 			// ref: http://mail-archives.apache.org/mod_mbox/kafka-users/201411.mbox/%3CCAHwHRrVmwyJg-1eyULkzwCUOXALuRA6BqcDV-ffSjEQ+tmT7dw@mail.gmail.com%3E
-			k.Publish("", []byte(t), *f)
+			k.Publish("", []byte(t), *cfg)
 			// Send the same message. This will be consumed.
-			k.Publish("", []byte(t), *f)
+			k.Publish("", []byte(t), *cfg)
 
 			// start timer and wait
-			m, mErr := consumer(topic, brokers)
-			So(mErr, ShouldBeNil)
-			So(m, ShouldNotBeNil)
-			So(string(m.Value), ShouldEqual, t)
+			m, _ := consumer(topic, brokers)
+
+			Convey("So we should receive what we published to Kafka", func() {
+				So(string(m.Value), ShouldEqual, t)
+			})
 		})
 	})
 }
@@ -120,15 +116,4 @@ func consumer(topic, brokers string) (*sarama.ConsumerMessage, error) {
 	case <-timeout:
 		return nil, errors.New("timed out waiting for produced message")
 	}
-}
-
-func getProcessErrorStr(err *cpolicy.ProcessingErrors) string {
-	errString := ""
-
-	if err.HasErrors() {
-		for _, e := range err.Errors() {
-			errString += fmt.Sprintln(e.Error())
-		}
-	}
-	return errString
 }
