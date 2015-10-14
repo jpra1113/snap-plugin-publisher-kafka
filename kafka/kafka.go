@@ -31,7 +31,7 @@ import (
 
 const (
 	PluginName    = "kafka"
-	PluginVersion = 1
+	PluginVersion = 2
 	PluginType    = plugin.PublisherPluginType
 )
 
@@ -54,7 +54,7 @@ func (k *kafkaPublisher) Publish(contentType string, content []byte, config map[
 	return err
 }
 
-func (k *kafkaPublisher) GetConfigPolicy() cpolicy.ConfigPolicy {
+func (k *kafkaPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	cp := cpolicy.New()
 	config := cpolicy.NewPolicyNode()
 
@@ -68,7 +68,7 @@ func (k *kafkaPublisher) GetConfigPolicy() cpolicy.ConfigPolicy {
 
 	config.Add(r1, r2)
 	cp.Add([]string{""}, config)
-	return *cp
+	return cp, nil
 }
 
 // Internal method after data has been converted to serialized bytes to send
