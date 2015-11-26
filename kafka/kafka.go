@@ -22,9 +22,9 @@ package kafka
 import (
 	"strings"
 
-	"github.com/intelsdi-x/pulse/control/plugin"
-	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
-	"github.com/intelsdi-x/pulse/core/ctypes"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap/core/ctypes"
 
 	"gopkg.in/Shopify/sarama.v1"
 )
@@ -36,7 +36,7 @@ const (
 )
 
 func Meta() *plugin.PluginMeta {
-	return plugin.NewPluginMeta(PluginName, PluginVersion, PluginType, []string{plugin.PulseGOBContentType}, []string{plugin.PulseGOBContentType})
+	return plugin.NewPluginMeta(PluginName, PluginVersion, PluginType, []string{plugin.SnapGOBContentType}, []string{plugin.SnapGOBContentType})
 }
 
 type kafkaPublisher struct{}

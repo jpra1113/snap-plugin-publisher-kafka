@@ -101,10 +101,10 @@ if [[ $TEST_SUITE == "unit" ]]; then
 	# fi
 elif [[ $TEST_SUITE == "integration" ]]; then
 	cd scripts/docker/kafka; docker build -t intelsdi-x/kafka:latest .
-	cd $PULSE_PLUGIN_SOURCE
+	cd $SNAP_PLUGIN_SOURCE
 	cd scripts/docker/zookeeper; docker build -t intelsdi-x/zookeeper:latest .
-	cd $PULSE_PLUGIN_SOURCE
+	cd $SNAP_PLUGIN_SOURCE
 	docker run -d --net=host intelsdi-x/zookeeper:latest
 	docker run -d --net=host intelsdi-x/kafka:latest
-	PULSE_TEST_KAFKA="127.0.0.1:9092" go test -v --tags=integration ./...
+	SNAP_TEST_KAFKA="127.0.0.1:9092" go test -v --tags=integration ./...
 fi

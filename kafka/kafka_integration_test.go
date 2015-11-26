@@ -28,7 +28,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/intelsdi-x/pulse/core/ctypes"
+	"github.com/intelsdi-x/snap/core/ctypes"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"gopkg.in/Shopify/sarama.v1"
@@ -39,11 +39,11 @@ var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 // integration test
 func TestPublish(t *testing.T) {
 	// This integration test requires KAFKA_BROKERS
-	if os.Getenv("PULSE_TEST_KAFKA") == "" {
+	if os.Getenv("SNAP_TEST_KAFKA") == "" {
 		fmt.Println("Skipping integration")
 		return
 	}
-	brokers := os.Getenv("PULSE_TEST_KAFKA")
+	brokers := os.Getenv("SNAP_TEST_KAFKA")
 
 	// Pick a random topic
 	topic := fmt.Sprintf("%d", time.Now().Nanosecond())
