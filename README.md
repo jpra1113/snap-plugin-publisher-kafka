@@ -9,7 +9,7 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 1. [Getting Started](#getting-started)
   * [System Requirements](#system-requirements)
   * [Installation](#installation)
-  * [Configuration and Usage](configuration-and-usage)
+  * [Configuration and Usage](#configuration-and-usage)
 2. [Documentation](#documentation)
   * [Examples](#examples)
   * [Roadmap](#roadmap)
@@ -26,7 +26,22 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
 ### Installation
 
-<< @TODO
+#### Download Kafka plugin binary:
+You can get the pre-built binaries for your OS and architecture at snap's [GitHub Releases](https://github.com/intelsdi-x/snap/releases) page.
+
+#### To build the plugin binary:
+Fork https://github.com/intelsdi-x/snap-plugin-publisher-kafka  
+Clone repo into `$GOPATH/src/github.com/intelsdi-x/`:
+
+```
+$ git clone https://github.com/<yourGithubID>/snap-plugin-publisher-kafka.git
+```
+
+Build the plugin by running make within the cloned repo:
+```
+$ make
+```
+This builds the plugin in `/build/rootfs/`
 
 ### Configuration and Usage
 * Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
