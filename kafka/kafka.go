@@ -31,7 +31,7 @@ import (
 
 const (
 	PluginName    = "kafka"
-	PluginVersion = 4
+	PluginVersion = 5
 	PluginType    = plugin.PublisherPluginType
 )
 
