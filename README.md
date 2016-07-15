@@ -54,10 +54,50 @@ This builds the plugin in `/build/rootfs/`
 | brokers  | string | yes | | Semicolon delimited list of "server:port" brokers |
 
 ## Documentation
-<< @TODO
+[Kafka](http://kafka.apache.org/documentation.html)
 
 ### Examples
-<< @TODO
+Example task manifest to use Kafka plugin:
+```
+{
+    "version": 1,
+    "schedule": {
+        "type": "simple",
+        "interval": "1s"
+    },
+    "workflow": {
+        "collect": {
+            "metrics": {
+                "/intel/mock/foo": {},
+                "/intel/mock/bar": {},
+                "/intel/mock/*/baz": {}
+            },
+            "config": {
+                "/intel/mock": {
+                    "user": "root",
+                    "password": "secret"
+                }
+            },
+            "process": [
+                {
+                    "plugin_name": "passthru",
+                    "process": null,
+                    "publish": [
+                        {
+                            "plugin_name": "kafka",
+                            "config": {
+                                "topic": "test",
+                                "brokers": "localhost:9292"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+```
+
 
 ### Roadmap
 
