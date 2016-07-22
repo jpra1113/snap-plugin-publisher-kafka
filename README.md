@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/intelsdi-x/snap-plugin-publisher-kafka.svg?token=HoxHq3yqBGpySzRd5XUm)](https://travis-ci.com/intelsdi-x/snap-plugin-publisher-kafka)
+[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-kafka.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-kafka)
 
 # snap publisher plugin - Kafka
 
@@ -11,6 +11,7 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
   * [Installation](#installation)
   * [Configuration and Usage](#configuration-and-usage)
 2. [Documentation](#documentation)
+  * [Kafka Quickstart](#kafka-quickstart)
   * [Examples](#examples)
   * [Roadmap](#roadmap)
 3. [Community Support](#community-support)
@@ -48,17 +49,90 @@ This builds the plugin in `/build/rootfs/`
 * Ensure `$SNAP_PATH` is exported  
 `export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
 
-| key      | value type | required | default  | description  |
-|----------|------------|----------|----------|--------------|
-| topic | string | yes | | The topic to send messages |         
-| brokers  | string | yes | | Semicolon delimited list of "server:port" brokers |
+#### Task Manifest Config
+
+In task manifest, in config section of Kafka publisher the following settings can be declared:
+
+| Key     | Type       | Default value     | Description                |
+|---------|------------|-------------------|----------------------------|
+| topic   | string     | "snap"            | The topic to send messages |         
+| brokers | string     | "localhost:9092"  | Semicolon delimited list of "server:port" brokers </br> Kafka's standard broker communication port is 9092 |
 
 ## Documentation
-[Kafka](http://kafka.apache.org/documentation.html)
+
+### Kafka Quickstart
+
+This is a minimal-configuration needed to run the Kafka broker service on Docker
+
+#### Run ZooKeeper server on docker  
+Kafka uses ZooKeeper so you need to first start a ZooKeeper server if you don't already have one.
+```	
+ $ docker run -d --name zookeeper jplock/zookeeper:3.4.6
+```
+Check if ZooKeeper docker is running:
+```	
+$ docker ps  
+
+	CONTAINER ID        IMAGE                      COMMAND                CREATED             STATUS              PORTS              			NAMES
+	9b0ddbdd75cd        jplock/zookeeper:3.4.6     "/opt/zookeeper/bin/   38 seconds ago      Up 38 seconds       2181/tcp, 2888/tcp, 3888/tcp	zookeeper
+```  
+
+#### Run Kafka server on docker
+```
+ docker run -d --name kafka --link zookeeper:zookeeper ches/kafka
+```
+
+#### Verify the running docker containers:
+```	
+$ docker ps
+
+	CONTAINER ID        IMAGE                        COMMAND                CREATED             STATUS              PORTS							NAMES
+	dfb3cdfb3f87        ches/kafka:latest            "/start.sh"            7 seconds ago       Up 6 seconds        7203/tcp, 9092/tcp				kafka
+	9b0ddbdd75cd        jplock/zookeeper:3.4.6       "/opt/zookeeper/bin/   3 minutes ago       Up 3 minutes        2181/tcp, 2888/tcp, 3888/tcp	zookeeper
+```
+
+#### Get Kafka advertised hostname:
+```	
+$ docker inspect --format '{{ .NetworkSettings.IPAddress }}' kafka
+
+  172.17.0.14
+```
+
+Read more about Kafka on [http://kafka.apache.org](http://kafka.apache.org/documentation.html)
 
 ### Examples
-Example task manifest to use Kafka plugin:
+
+Example running mock collector plugin, passthru processor plugin, and writing data to Kafka.
+
+Make sure that your `$SNAP_PATH` is set, if not:
 ```
+$ export SNAP_PATH=<snapDirectoryPath>/build
+```
+In one terminal window, open the snap daemon (in this case with logging set to 1 and trust disabled):
+```
+$ $SNAP_PATH/bin/snapd -l 1 -t 0
+```
+In another terminal window:  
+
+Load snap-plugin-collector-mock1 plugin:
+```
+$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-collector-mock1
+```
+See available metrics for your system:
+```
+$ $SNAP_PATH/bin/snapctl metric list
+```
+Load snap-plugin-processor-passthru plugin:
+```
+$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-processor-passthru
+```
+Load snap-plugin-publisher-kafka plugin:
+```
+$ $SNAP_PATH/bin/snapctl plugin load build/rootfs/snap-plugin-publisher-kafka
+```
+Create a task manifest to use Kafka publisher plugin (see [exemplary task](examples/tasks/)):
+
+```json
 {
     "version": 1,
     "schedule": {
@@ -81,13 +155,12 @@ Example task manifest to use Kafka plugin:
             "process": [
                 {
                     "plugin_name": "passthru",
-                    "process": null,
                     "publish": [
                         {
                             "plugin_name": "kafka",
                             "config": {
                                 "topic": "test",
-                                "brokers": "localhost:9292"
+                                "brokers": "172.17.0.14:9092"
                             }
                         }
                     ]
@@ -98,6 +171,22 @@ Example task manifest to use Kafka plugin:
 }
 ```
 
+Create a task:
+```
+$ $SNAP_PATH/bin/snapctl task create -t examples/tasks/mock-kafka.json
+Using task manifest to create task
+Task created
+ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
+State: Running
+```
+
+To stop previously created task:
+```
+$ $SNAP_PATH/bin/snapctl task stop 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Task stopped:
+ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
+```
 
 ### Roadmap
 
