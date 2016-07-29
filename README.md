@@ -12,6 +12,7 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
   * [Configuration and Usage](#configuration-and-usage)
 2. [Documentation](#documentation)
   * [Kafka Quickstart](#kafka-quickstart)
+  * [Published data] (#published-data)
   * [Examples](#examples)
   * [Roadmap](#roadmap)
 3. [Community Support](#community-support)
@@ -100,9 +101,40 @@ $ docker inspect --format '{{ .NetworkSettings.IPAddress }}' kafka
 
 Read more about Kafka on [http://kafka.apache.org](http://kafka.apache.org/documentation.html)
 
+### Published data
+
+The plugin publishes all collected metrics serialized as JSON to Kafka. An example of published data is below:
+
+```json
+[
+  {
+    "timestamp": "2016-07-25T11:27:59.795548989+02:00",
+    "namespace": "/intel/mock/bar",
+    "data": 82,
+    "unit": "",
+    "tags": {
+      "plugin_running_on": "my-machine"
+    },
+    "version": 0,
+    "last_advertised_time": "2016-07-25T11:27:21.852064032+02:00"
+  },
+  {
+    "timestamp": "2016-07-25T11:27:59.795549268+02:00",
+    "namespace": "/intel/mock/foo",
+    "data": 72,
+    "unit": "",
+    "tags": {
+      "plugin_running_on": "my-machine"
+    },
+    "version": 0,
+    "last_advertised_time": "2016-07-25T11:27:21.852063228+02:00"
+  }
+]
+```
+
 ### Examples
 
-Example running mock collector plugin, passthru processor plugin, and writing data to Kafka.
+Example of running mock collector plugin, passthru processor plugin, and writing data to Kafka.
 
 Make sure that your `$SNAP_PATH` is set, if not:
 ```
@@ -114,14 +146,15 @@ $ $SNAP_PATH/bin/snapd -l 1 -t 0
 ```
 In another terminal window:  
 
-Load snap-plugin-collector-mock1 plugin:
+Load snap-plugin-collector-mock2 plugin:
 ```
-$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-collector-mock1
+$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-collector-mock2
 ```
 See available metrics for your system:
 ```
 $ $SNAP_PATH/bin/snapctl metric list
 ```
+
 Load snap-plugin-processor-passthru plugin:
 ```
 $ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-processor-passthru
