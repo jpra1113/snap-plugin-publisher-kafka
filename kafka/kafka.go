@@ -37,7 +37,7 @@ import (
 
 const (
 	PluginName    = "kafka"
-	PluginVersion = 8
+	PluginVersion = 9
 	PluginType    = plugin.PublisherPluginType
 )
 
@@ -115,6 +115,12 @@ func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte)
 	if err != nil {
 		return fmt.Errorf("Cannot initialize a new Sarama SyncProducer using the given broker addresses (%v), err=%v", brokers, err)
 	}
+
+	defer func() {
+		if err := producer.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	_, _, err = producer.SendMessage(&sarama.ProducerMessage{
 		Topic: topic,
