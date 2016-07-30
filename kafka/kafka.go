@@ -37,7 +37,7 @@ import (
 
 const (
 	PluginName    = "kafka"
-	PluginVersion = 8
+	PluginVersion = 9
 	PluginType    = plugin.PublisherPluginType
 )
 
@@ -116,15 +116,11 @@ func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte)
 		return fmt.Errorf("Cannot initialize a new Sarama SyncProducer using the given broker addresses (%v), err=%v", brokers, err)
 	}
 
-	// Inserted codes from https://github.com/tcnksm-sample/sarama/blob/master/sync-producer/main.go
-	// Commit ec1f0dad91d079020b4833062b93a4832fca82a7, line 23:28
 	defer func() {
 		if err := producer.Close(); err != nil {
-			// Should not reach here
 			panic(err)
 		}
 	}()
-	// Inserted codes end
 
 	_, _, err = producer.SendMessage(&sarama.ProducerMessage{
 		Topic: topic,
