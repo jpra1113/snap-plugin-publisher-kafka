@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-kafka.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-publisher-kafka)
 
-# snap publisher plugin - Kafka
+# Snap publisher plugin - Kafka
 
 Allows publishing of data to [Apache Kafka](http://kafka.apache.org)
 
@@ -12,7 +12,7 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
   * [Configuration and Usage](#configuration-and-usage)
 2. [Documentation](#documentation)
   * [Kafka Quickstart](#kafka-quickstart)
-  * [Published data] (#published-data)
+  * [Published data](#published-data)
   * [Examples](#examples)
   * [Roadmap](#roadmap)
 3. [Community Support](#community-support)
@@ -29,10 +29,11 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 ### Installation
 
 #### Download Kafka plugin binary:
-You can get the pre-built binaries for your OS and architecture at snap's [GitHub Releases](https://github.com/intelsdi-x/snap/releases) page.
+You can get the pre-built binaries for your OS and architecture at plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-publisher-kafka/releases) page.
 
 #### To build the plugin binary:
-Fork https://github.com/intelsdi-x/snap-plugin-publisher-kafka  
+Fork https://github.com/intelsdi-x/snap-plugin-publisher-kafka
+
 Clone repo into `$GOPATH/src/github.com/intelsdi-x/`:
 
 ```
@@ -43,12 +44,10 @@ Build the plugin by running make within the cloned repo:
 ```
 $ make
 ```
-This builds the plugin in `/build/rootfs/`
+This builds the plugin in `./build`
 
 ### Configuration and Usage
 * Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
-* Ensure `$SNAP_PATH` is exported  
-`export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
 
 #### Task Manifest Config
 
@@ -56,7 +55,7 @@ In task manifest, in config section of Kafka publisher the following settings ca
 
 | Key     | Type       | Default value     | Description                |
 |---------|------------|-------------------|----------------------------|
-| topic   | string     | "snap"            | The topic to send messages |         
+| topic   | string     | "snap"            | The topic to send messages |
 | brokers | string     | "localhost:9092"  | Semicolon delimited list of "server:port" brokers </br> Kafka's standard broker communication port is 9092 |
 
 ## Documentation
@@ -133,92 +132,65 @@ The plugin publishes all collected metrics serialized as JSON to Kafka. An examp
 ```
 
 ### Examples
+Example of running [psutil collector plugin](https://github.com/intelsdi-x/snap-plugin-collector-psutil) and publishing data to Kafka.
 
-Example of running mock collector plugin, passthru processor plugin, and writing data to Kafka.
+Set up the [Snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
 
-Make sure that your `$SNAP_PATH` is set, if not:
-```
-$ export SNAP_PATH=<snapDirectoryPath>/build
-```
-In one terminal window, open the snap daemon (in this case with logging set to 1 and trust disabled):
-```
-$ $SNAP_PATH/bin/snapd -l 1 -t 0
-```
-In another terminal window:  
+Ensure [Snap daemon is running](https://github.com/intelsdi-x/snap#running-snap):
+* initd: `service snap-telemetry start`
+* systemd: `systemctl start snap-telemetry`
+* command line: `sudo snapd -l 1 -t 0 &`
 
-Load snap-plugin-collector-mock2 plugin:
+Download and load Snap plugins (paths to binary files for Linux/amd64):
 ```
-$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-collector-mock2
-```
-See available metrics for your system:
-```
-$ $SNAP_PATH/bin/snapctl metric list
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-kafka/latest/linux/x86_64/snap-plugin-publisher-kafka
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-psutil/latest/linux/x86_64/snap-plugin-collector-psutil
+$ snapctl plugin load snap-plugin-publisher-kafka
+$ snapctl plugin load snap-plugin-collector-psutil
 ```
 
-Load snap-plugin-processor-passthru plugin:
-```
-$ $SNAP_PATH/bin/snapctl plugin load $SNAP_PATH/plugin/snap-plugin-processor-passthru
-```
-Load snap-plugin-publisher-kafka plugin:
-```
-$ $SNAP_PATH/bin/snapctl plugin load build/rootfs/snap-plugin-publisher-kafka
-```
-Create a task manifest to use Kafka publisher plugin (see [exemplary task](examples/tasks/)):
-
+Create a [task manifest](https://github.com/intelsdi-x/snap/blob/master/docs/TASKS.md) (see [exemplary tasks](examples/tasks/)),
+for example `psutil-kafka.json` with following content:
 ```json
 {
-    "version": 1,
-    "schedule": {
-        "type": "simple",
-        "interval": "1s"
-    },
-    "workflow": {
-        "collect": {
-            "metrics": {
-                "/intel/mock/foo": {},
-                "/intel/mock/bar": {},
-                "/intel/mock/*/baz": {}
-            },
-            "config": {
-                "/intel/mock": {
-                    "user": "root",
-                    "password": "secret"
-                }
-            },
-            "process": [
-                {
-                    "plugin_name": "passthru",
-                    "publish": [
-                        {
-                            "plugin_name": "kafka",
-                            "config": {
-                                "topic": "test",
-                                "brokers": "172.17.0.14:9092"
-                            }
-                        }
-                    ]
-                }
-            ]
+  "version": 1,
+  "schedule": {
+    "type": "simple",
+    "interval": "1s"
+  },
+  "workflow": {
+    "collect": {
+      "metrics": {
+        "/intel/psutil/load/load1": {},
+        "/intel/psutil/load/load15": {}
+      },
+      "publish": [
+        {
+          "plugin_name": "kafka",
+          "config": {
+            "topic": "test",
+            "brokers": "172.17.0.14:9092"
+          }
         }
+      ]
     }
+  }
 }
 ```
 
 Create a task:
 ```
-$ $SNAP_PATH/bin/snapctl task create -t examples/tasks/mock-kafka.json
-Using task manifest to create task
-Task created
-ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
-Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
-State: Running
+$ snapctl task create -t psutil-kafka.json
+```
+
+Watch created task:
+```
+$ snapctl task watch <task_id>
 ```
 
 To stop previously created task:
 ```
-$ $SNAP_PATH/bin/snapctl task stop 02dd7ff4-8106-47e9-8b86-70067cd0a850
-Task stopped:
-ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
+$ snapctl task stop <task_id>
 ```
 
 ### Roadmap
@@ -228,7 +200,7 @@ There isn't a current roadmap for this plugin, but it is in active development. 
 If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-publisher-kafka/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-publisher-kafka/pulls).
 
 ## Community Support
-This repository is one of **many** plugins in **snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
+This repository is one of **many** plugins in **Snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
 
 ## Contributing
 We love contributions! 
@@ -236,7 +208,7 @@ We love contributions!
 There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
-[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+[Snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
 
