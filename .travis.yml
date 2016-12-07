@@ -3,7 +3,7 @@ sudo: false
 language: go
 go:
 - 1.6.3
-- 1.7.1
+- 1.7.3
 env:
   global:
   - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -43,7 +43,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     branch: master
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
 - provider: s3
   access_key_id: AKIAINMB43VSSPFZISAA
   secret_access_key:
@@ -57,7 +57,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
 - provider: releases
   api_key:
     secure: xBP1/9GdLtYHGUKXk/ac7t+NNodLo16fucPfqLoxC23Rw3a84vMluVZheWplSVbiTmuOVn777EfoK2ej0nTGL7+iNLc/z84pqDM5kW6Bo/EO5J9r54DpMcEznbkxsNyXtNdeX5EO7Ufs35+eU2cuvZ8YeIs3NNna6EBcB/JD7DlVKcLq4oKeMLafEs2vDSaFRDrgirtQhIU8525LCVSNwK3MiBPZnRMcTj6i0GLtz5BnVOBwgIElYhDawkIBnYmVxoBSMD7OyOfDt5zAq/1WJuoFj9zxjcTvCSKkgyno0ziDy3HrhV07QOy9gZ8nPUXPRI1u1cz0J3WLErvj0hmoBsOYbFGB6PpYwyjPZb0Pa8KrNqHYrVdgEu9VP6Y6y+YwzHOLqn8rFSaTCwlWlDN4Z9iso3jrbDfVdSKDb/GGF7MhWG981eresWB0jYpx3kJJ5mQtFTa0uD+udyYDyrvp5EP1MNxMCAkcg7s23E/517hcctFKCRRc5qt7ulDOD8djhYCQDTZlBkv5K6sWhILcyXMFsbKVLRc6pRYbdBN8P3BJ+6MkqxhQuu+ae7UQbAWtJxkPGWkaz3mYVEUUuu7Jne3wCs1lXbU0ORPuqSDhZckOuBpF4yd7WnBliqIrQ1TNc5K9eO3nLdWcF0gMLopOLDHw8MrI1EPGzlpIlx9Aink=
@@ -68,4 +68,4 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
