@@ -2,8 +2,8 @@
 sudo: false
 language: go
 go:
-- 1.6.3
-- 1.7.3
+- 1.7.x
+- 1.8.x
 env:
   global:
   - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -11,10 +11,10 @@ env:
   matrix:
   - TEST_TYPE=small
   - TEST_TYPE=medium
-  - TEST_TYPE=build
+  - TEST_TYPE: build
 matrix:
   exclude:
-  - go: 1.6.3
+  - go: 1.7.x
     env: TEST_TYPE=build
 before_install:
 - "[[ -d $SNAP_PLUGIN_SOURCE ]] || mkdir -p $ORG_PATH && ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE"
@@ -31,9 +31,8 @@ before_deploy:
 - "./scripts/pre_deploy.sh"
 deploy:
 - provider: s3
-  access_key_id: AKIAINMB43VSSPFZISAA
-  secret_access_key:
-    secure: M2MPahJfZeE1dAJcAB1mshyizhm3yJVa//4YwJz4aqNIIpT3hFyIVoIW1Ud2zXah3G5eARv8vq3WYxc//nLrQy1Baii532JkRRBkehoqhoj1+94lH/qy3qeOU1itsPYgmx8rwPLfjorIB/TdJnWJaJhEZxmuhyX0tVwM1N23WXlaDAZkYVEvT2dOhpBiQJRmbPzO9LBXd2KewRrs+NQNP1TEQjISqKHtA6wPlHRNkMe7BPrTzBJ8uciaiXsf0T+RdIsqX6W+h+nBUPv0S/V3VYR/TXvKSzkWcUf30lwLYT439/hFoRiNhMLcDDwl4bxHrU1RrlSS8JF1+2SuXltx1l7HU9wUk+meKEciHiHDBPTu1Ouy/9HfbAzyVZ5UXM/aeEB3j3lfjQezG2JzVvHap4wjtvMmifhYKPkHpB4C+nlMyvPwtncg11/9KNdABB5g/xvvh66YeD7RdW9KyOaaaipBC489Y72o1UZUZo7NYPRIhnJFJSxQoN1n9yYn6st9dfczhWmdnPFYac+iMUTkD7XezRH4D7aEMGMrvfdsGUB0WW8iaUn3csk0TDqnnzy75Uqj0Ddpthu6J60g+6AI0SMkK0b7XlsTALRq3eGO9SGHq23o57M0YzSMWgyjOgLeUhngUpfgDJM76jtmPJckAjFl7UJsGeFS91w0E1+fu0Y=
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: snap.ci.snap-telemetry.io
   region: us-west-2
   skip_cleanup: true
@@ -43,11 +42,10 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     branch: master
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.8(|\.[0-9]+)$
 - provider: s3
-  access_key_id: AKIAINMB43VSSPFZISAA
-  secret_access_key:
-    secure: M2MPahJfZeE1dAJcAB1mshyizhm3yJVa//4YwJz4aqNIIpT3hFyIVoIW1Ud2zXah3G5eARv8vq3WYxc//nLrQy1Baii532JkRRBkehoqhoj1+94lH/qy3qeOU1itsPYgmx8rwPLfjorIB/TdJnWJaJhEZxmuhyX0tVwM1N23WXlaDAZkYVEvT2dOhpBiQJRmbPzO9LBXd2KewRrs+NQNP1TEQjISqKHtA6wPlHRNkMe7BPrTzBJ8uciaiXsf0T+RdIsqX6W+h+nBUPv0S/V3VYR/TXvKSzkWcUf30lwLYT439/hFoRiNhMLcDDwl4bxHrU1RrlSS8JF1+2SuXltx1l7HU9wUk+meKEciHiHDBPTu1Ouy/9HfbAzyVZ5UXM/aeEB3j3lfjQezG2JzVvHap4wjtvMmifhYKPkHpB4C+nlMyvPwtncg11/9KNdABB5g/xvvh66YeD7RdW9KyOaaaipBC489Y72o1UZUZo7NYPRIhnJFJSxQoN1n9yYn6st9dfczhWmdnPFYac+iMUTkD7XezRH4D7aEMGMrvfdsGUB0WW8iaUn3csk0TDqnnzy75Uqj0Ddpthu6J60g+6AI0SMkK0b7XlsTALRq3eGO9SGHq23o57M0YzSMWgyjOgLeUhngUpfgDJM76jtmPJckAjFl7UJsGeFS91w0E1+fu0Y=
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: snap.ci.snap-telemetry.io
   region: us-west-2
   skip_cleanup: true
@@ -57,10 +55,9 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.8(|\.[0-9]+)$
 - provider: releases
-  api_key:
-    secure: xBP1/9GdLtYHGUKXk/ac7t+NNodLo16fucPfqLoxC23Rw3a84vMluVZheWplSVbiTmuOVn777EfoK2ej0nTGL7+iNLc/z84pqDM5kW6Bo/EO5J9r54DpMcEznbkxsNyXtNdeX5EO7Ufs35+eU2cuvZ8YeIs3NNna6EBcB/JD7DlVKcLq4oKeMLafEs2vDSaFRDrgirtQhIU8525LCVSNwK3MiBPZnRMcTj6i0GLtz5BnVOBwgIElYhDawkIBnYmVxoBSMD7OyOfDt5zAq/1WJuoFj9zxjcTvCSKkgyno0ziDy3HrhV07QOy9gZ8nPUXPRI1u1cz0J3WLErvj0hmoBsOYbFGB6PpYwyjPZb0Pa8KrNqHYrVdgEu9VP6Y6y+YwzHOLqn8rFSaTCwlWlDN4Z9iso3jrbDfVdSKDb/GGF7MhWG981eresWB0jYpx3kJJ5mQtFTa0uD+udyYDyrvp5EP1MNxMCAkcg7s23E/517hcctFKCRRc5qt7ulDOD8djhYCQDTZlBkv5K6sWhILcyXMFsbKVLRc6pRYbdBN8P3BJ+6MkqxhQuu+ae7UQbAWtJxkPGWkaz3mYVEUUuu7Jne3wCs1lXbU0ORPuqSDhZckOuBpF4yd7WnBliqIrQ1TNc5K9eO3nLdWcF0gMLopOLDHw8MrI1EPGzlpIlx9Aink=
+  api_key: $GITHUB_API_KEY
   file:
     - release/snap-plugin-publisher-kafka_linux_x86_64
     - release/snap-plugin-publisher-kafka_darwin_x86_64
@@ -68,4 +65,4 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-publisher-kafka
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION =~ ^1\.8(|\.[0-9]+)$
