@@ -37,7 +37,7 @@ import (
 
 const (
 	PluginName    = "kafka"
-	PluginVersion = 9
+	PluginVersion = 10
 	PluginType    = plugin.PublisherPluginType
 )
 
@@ -111,7 +111,9 @@ func (k *kafkaPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 
 // Internal method after data has been converted to serialized bytes to send
 func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte) error {
-	producer, err := sarama.NewSyncProducer(brokers, nil)
+	conf := sarama.NewConfig()
+	conf.Producer.MaxMessageBytes = 10 << 20 // 100MB
+	producer, err := sarama.NewSyncProducer(brokers, conf)
 	if err != nil {
 		return fmt.Errorf("Cannot initialize a new Sarama SyncProducer using the given broker addresses (%v), err=%v", brokers, err)
 	}
@@ -122,10 +124,13 @@ func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte)
 		}
 	}()
 
-	_, _, err = producer.SendMessage(&sarama.ProducerMessage{
+	a, b, err := producer.SendMessage(&sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(content),
 	})
+	fmt.Println("producer message result a: ", a)
+	fmt.Println("producer message result b: ", b)
+	fmt.Println("producer message result err: ", err)
 	return err
 }
 
