@@ -23,7 +23,7 @@ import (
 	"os"
 
 	// Import the snap plugin library
-	"github.com/intelsdi-x/snap-plugin-publisher-kafka/kafka"
+	"github.com/hyperpilotio/snap-plugin-publisher-kafka/kafka"
 	"github.com/intelsdi-x/snap/control/plugin"
 )
 
