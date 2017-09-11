@@ -51,24 +51,21 @@ func Meta() *plugin.PluginMeta {
 }
 
 type kafkaPublisher struct {
-	Cache map[string]PreviousData
 }
 
 func NewKafkaPublisher() *kafkaPublisher {
-	return &kafkaPublisher{
-		Cache: make(map[string]PreviousData),
-	}
+	return &kafkaPublisher{}
 }
 
 type MetricToPublish struct {
 	// The timestamp from when the metric was created.
-	Timestamp       time.Time         `json:"timestamp"`
-	Namespace       string            `json:"namespace"`
-	Data            interface{}       `json:"data"`
-	Unit            string            `json:"unit"`
-	MetricTypeValue string            `json:"metricTypeValue"`
-	Tags            map[string]string `json:"tags"`
-	Version_        int               `json:"version"`
+	Timestamp time.Time         `json:"timestamp"`
+	Namespace string            `json:"namespace"`
+	Data      interface{}       `json:"data"`
+	DataRate  interface{}       `json:"dataRate"`
+	Unit      string            `json:"unit"`
+	Tags      map[string]string `json:"tags"`
+	Version_  int               `json:"version"`
 	// Last advertised time is the last time the snap agent was told about a metric.
 	LastAdvertisedTime time.Time `json:"last_advertised_time"`
 }
@@ -88,10 +85,9 @@ func (k *kafkaPublisher) Publish(contentType string, content []byte, config map[
 	default:
 		return fmt.Errorf("Unknown content type '%s'", contentType)
 	}
-	// format metrics types to metrics to be published
-	caluMetrics := config["metrics"].(ctypes.ConfigValueStr).Value
-	metrics := k.formatMetricTypes(mts, caluMetrics)
 
+	// format metrics types to metrics to be published
+	metrics := formatMetricTypes(mts)
 	jsonOut, err := json.Marshal(metrics)
 	if err != nil {
 		return fmt.Errorf("Cannot marshal metrics to JSON format, err=%v", err)
@@ -115,11 +111,7 @@ func (k *kafkaPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	handleErr(err)
 	r2.Description = "List of brokers separated by semicolon in the format: <broker-ip:port;broker-ip:port> (ex: \"192.168.1.1:9092;172.16.9.99:9092\")"
 
-	r3, err := cpolicy.NewStringRule("metrics", false, "")
-	handleErr(err)
-	r3.Description = "Kafka metrics for publishing"
-
-	config.Add(r1, r2, r3)
+	config.Add(r1, r2)
 	cp.Add([]string{""}, config)
 	return cp, nil
 }
@@ -146,43 +138,24 @@ func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte)
 
 // formatMetricTypes returns metrics in format to be publish as a JSON based on incoming metrics types;
 // i.a. namespace is formatted as a single string
-func (k *kafkaPublisher) formatMetricTypes(mts []plugin.MetricType, caluMetrics string) []MetricToPublish {
+func formatMetricTypes(mts []plugin.MetricType) []MetricToPublish {
 	var metrics []MetricToPublish
 	for _, mt := range mts {
-		namespaces := mt.Namespace().Strings()
-		dataMetricType := namespaces[len(namespaces)-1]
-		dataMetricTypeValue := namespaces[len(namespaces)-2]
-		// if dataMetricType == caluMetrics {
-		previousData, ok := k.Cache[dataMetricType+"_"+dataMetricTypeValue]
+		dataRate := ""
+		val, ok := mt.Tags()["dataRate"]
 		if ok {
-			diffSeconds := mt.Timestamp().Sub(previousData.Create).Seconds()
-			metrics = append(metrics, MetricToPublish{
-				Timestamp:          mt.Timestamp(),
-				Namespace:          mt.Namespace().String(),
-				Data:               (mt.Data().(float64) - previousData.Data) / diffSeconds,
-				MetricTypeValue:    dataMetricTypeValue,
-				Unit:               mt.Unit(),
-				Tags:               mt.Tags(),
-				Version_:           mt.Version(),
-				LastAdvertisedTime: mt.LastAdvertisedTime(),
-			})
+			dataRate = val
 		}
-
-		k.Cache[dataMetricType+"_"+dataMetricTypeValue] = PreviousData{
-			Data:   mt.Data().(float64),
-			Create: mt.Timestamp(),
-		}
-		// } else {
-		// metrics = append(metrics, MetricToPublish{
-		// 	Timestamp:          mt.Timestamp(),
-		// 	Namespace:          mt.Namespace().String(),
-		// 	Data:               mt.Data(),
-		// 	Unit:               mt.Unit(),
-		// 	Tags:               mt.Tags(),
-		// 	Version_:           mt.Version(),
-		// 	LastAdvertisedTime: mt.LastAdvertisedTime(),
-		// })
-		// }
+		metrics = append(metrics, MetricToPublish{
+			Timestamp:          mt.Timestamp(),
+			Namespace:          mt.Namespace().String(),
+			Data:               mt.Data(),
+			DataRate:           dataRate,
+			Unit:               mt.Unit(),
+			Tags:               mt.Tags(),
+			Version_:           mt.Version(),
+			LastAdvertisedTime: mt.LastAdvertisedTime(),
+		})
 	}
 	return metrics
 }
