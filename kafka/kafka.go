@@ -41,11 +41,6 @@ const (
 	PluginType    = plugin.PublisherPluginType
 )
 
-type PreviousData struct {
-	Data   float64
-	Create time.Time
-}
-
 func Meta() *plugin.PluginMeta {
 	return plugin.NewPluginMeta(PluginName, PluginVersion, PluginType, []string{plugin.SnapGOBContentType}, []string{plugin.SnapGOBContentType})
 }
@@ -88,14 +83,43 @@ func (k *kafkaPublisher) Publish(contentType string, content []byte, config map[
 
 	// format metrics types to metrics to be published
 	metrics := formatMetricTypes(mts)
+	splitNumber := config["splitNumber"].(ctypes.ConfigValueInt).Value
+	topic := config["topic"].(ctypes.ConfigValueStr).Value
+	brokers := parseBrokerString(config["brokers"].(ctypes.ConfigValueStr).Value)
+
+	metricsLength := len(metrics)
+	if metricsLength >= splitNumber {
+		splitCnt := 1
+		splitMetrics := []MetricToPublish{}
+		for i, mt := range metrics {
+			splitMetrics = append(splitMetrics, mt)
+			if metricsLength == (i + 1) {
+				jsonOut, err := json.Marshal(splitMetrics)
+				if err != nil {
+					return fmt.Errorf("Cannot marshal metrics to JSON format, err=%v", err)
+				}
+				return k.publish(topic, brokers, []byte(jsonOut))
+			}
+			if splitCnt == splitNumber {
+				jsonOut, err := json.Marshal(splitMetrics)
+				if err != nil {
+					return fmt.Errorf("Cannot marshal metrics to JSON format, err=%v", err)
+				}
+				if err := k.publish(topic, brokers, []byte(jsonOut)); err != nil {
+					return err
+				}
+				// reset
+				splitCnt = 1
+				splitMetrics = splitMetrics[0:0]
+			}
+			splitCnt++
+		}
+	}
+
 	jsonOut, err := json.Marshal(metrics)
 	if err != nil {
 		return fmt.Errorf("Cannot marshal metrics to JSON format, err=%v", err)
 	}
-
-	topic := config["topic"].(ctypes.ConfigValueStr).Value
-	brokers := parseBrokerString(config["brokers"].(ctypes.ConfigValueStr).Value)
-
 	return k.publish(topic, brokers, []byte(jsonOut))
 }
 
@@ -111,7 +135,11 @@ func (k *kafkaPublisher) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
 	handleErr(err)
 	r2.Description = "List of brokers separated by semicolon in the format: <broker-ip:port;broker-ip:port> (ex: \"192.168.1.1:9092;172.16.9.99:9092\")"
 
-	config.Add(r1, r2)
+	r3, err := cpolicy.NewIntegerRule("splitNumber", false, 100)
+	handleErr(err)
+	r3.Description = "The number of batches publishing to kafka"
+
+	config.Add(r1, r2, r3)
 	cp.Add([]string{""}, config)
 	return cp, nil
 }
