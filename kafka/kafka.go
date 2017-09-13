@@ -169,16 +169,10 @@ func (k *kafkaPublisher) publish(topic string, brokers []string, content []byte)
 func formatMetricTypes(mts []plugin.MetricType) []MetricToPublish {
 	var metrics []MetricToPublish
 	for _, mt := range mts {
-		dataRate := ""
-		val, ok := mt.Tags()["dataRate"]
-		if ok {
-			dataRate = val
-		}
 		metrics = append(metrics, MetricToPublish{
 			Timestamp:          mt.Timestamp(),
 			Namespace:          mt.Namespace().String(),
 			Data:               mt.Data(),
-			DataRate:           dataRate,
 			Unit:               mt.Unit(),
 			Tags:               mt.Tags(),
 			Version_:           mt.Version(),
